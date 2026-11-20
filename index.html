@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CTRL ALT DECIDIR</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap">
+<style>
+:root{--bg:#cfe3ff;--dot:#9dc1f5;--ink:#111;--paper:#fffdf5;--nar:#ffd23f;--red:#e63946;--blue:#2f6fe4;--teal:#c9f2ee;--cap:#111;--capt:#fffdf5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14204f;--dot:#223272;--cap:#ffd23f;--capt:#111}}
+:root[data-theme="dark"]{--bg:#14204f;--dot:#223272;--cap:#ffd23f;--capt:#111}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(var(--dot) 18%,transparent 20%);background-size:14px 14px;font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;font-size:18px;color:var(--ink)}
+main{width:100%;max-width:680px;margin:0 auto;padding:28px 14px 40px;text-align:center}
+h1{font-family:Bangers,Impact,sans-serif;font-weight:400;letter-spacing:2px;font-size:34px;margin:4px 0 0;background:var(--cap);color:var(--capt);display:inline-block;padding:2px 14px;transform:rotate(-2deg)}
+.chap{font-weight:700;margin:10px 0 10px;color:var(--cap);background:var(--bg);display:inline-block;padding:0 6px;font-size:16px;mix-blend-mode:normal}
+.panel{background:var(--paper);border:4px solid #111;box-shadow:7px 7px 0 #111;position:relative;color:#111}
+.narr{background:var(--nar);border-bottom:4px solid #111;padding:10px 14px;font-weight:700;line-height:1.35}
+.scene{text-align:left;padding:14px 12px 16px;display:flex;flex-direction:column;gap:14px;background-image:radial-gradient(#0000000f 20%,transparent 22%);background-size:10px 10px}
+.scene:empty{display:none}
+.row{display:flex;align-items:flex-end;gap:10px}
+.row.r{flex-direction:row-reverse}
+.row svg{flex:none;width:70px;height:auto}
+.bub{position:relative;background:#fff;border:3px solid #111;border-radius:18px;padding:8px 12px;line-height:1.35;flex:1;min-width:0}
+.bub b{display:block;font-family:Bangers,Impact,sans-serif;font-weight:400;letter-spacing:1px;font-size:15px;color:var(--blue)}
+.bub.ia{background:var(--teal);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px}
+.bub.ia b{color:#0a7d71}
+.bub.pr b{color:#7b3fa0}.bub.fr b{color:#c4620a}
+.bub::before{content:"";position:absolute;bottom:14px;width:14px;height:14px;background:inherit;border:3px solid #111;transform:rotate(45deg)}
+.l .bub::before{left:-9px;border-right:0;border-top:0}
+.r .bub::before{right:-9px;border-left:0;border-bottom:0}
+.big{font-size:64px;text-align:center;line-height:1}
+.doc{background:#fff;border:2px dashed #111;border-radius:8px;padding:6px 10px;margin-top:6px;font-size:16px}
+table{border-collapse:collapse;width:100%;font-size:15px;margin-top:8px;display:block;overflow-x:auto}
+td,th{border:2px solid #111;padding:5px 7px;text-align:left;vertical-align:top;background:#fff}th{background:var(--nar)}
+.note{font-size:14px;margin-top:6px}
+.ctl{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.q{margin:0;font-weight:700;background:var(--paper);border:3px solid #111;padding:6px 12px;color:#111}
+button,input{font:inherit}
+button{cursor:pointer;text-align:center;background:var(--red);color:#fff;border:3px solid #111;box-shadow:4px 4px 0 #111;padding:10px 14px;font-weight:700;line-height:1.3}
+button.go{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:22px;letter-spacing:1px;text-align:center;background:var(--blue)}
+button:hover{transform:translate(-1px,-1px)}
+button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #111}
+button:focus-visible,input:focus-visible{outline:4px solid #ffd23f;outline-offset:2px;box-shadow:0 0 0 7px #111}
+input{border:3px solid #111;padding:10px 12px;background:#fff;color:#111;width:100%}
+.err{color:#fff;background:#111;padding:4px 10px;display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>CTRL ALT DECIDIR</h1>
+<div class="chap" id="chap"></div>
+<div id="stage"></div>
+</main>
+<script>
+var S={},$=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var BAD=["sexo","sexual","porno","porn","xxx","puta","puto","verga","pene","culo","follar","violar","violacion","matar","asesino","muerte","sangre","nazi","mierda","maricon"];
+var bad=function(v){var t=v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");return BAD.some(function(w){return t.indexOf(w)>-1})};
+var NM={jc:"Juan Carlos",pr:"Profesora",ia:"IA",fr:"Compañero"};
+var NV=[["Nunca","Esa es la actitud, vamos con toda."],["Tal vez","Yo creo que todo estará bien, aunque también tengo nervios."],["La verdad, muchos","Ánimo, seguramente a Juan Carlos le irá bien."]];
+function fig(w){
+var st='stroke="#111" stroke-width="3"',sh,sk,ha,x='';
+if(w=="ia")return '<svg viewBox="0 0 80 110" aria-hidden="true"><path d="M10 110 Q10 70 40 70 Q70 70 70 110Z" fill="#3ec6b8" '+st+'/><line x1="40" y1="8" x2="40" y2="20" '+st+'/><circle cx="40" cy="8" r="5" fill="#e63946" '+st+'/><rect x="16" y="20" width="48" height="44" rx="12" fill="#3ec6b8" '+st+'/><circle cx="30" cy="40" r="6" fill="#fff"/><circle cx="50" cy="40" r="6" fill="#fff"/><circle cx="31" cy="41" r="3"/><circle cx="51" cy="41" r="3"/><path d="M30 54 Q40 60 50 54" fill="none" '+st+'/></svg>';
+var P={jc:["#2f6fe4","#e0a878","#2b1b12"],pr:["#7b3fa0","#f0c9a0","#8a8a8a"],fr:["#f08a24","#c68a5c","#111"]}[w]||["#999","#e0a878","#222"];
+sh=P[0];sk=P[1];ha=P[2];
+if(w=="pr")x='<circle cx="40" cy="14" r="9" fill="'+ha+'" '+st+'/><circle cx="32" cy="44" r="7" fill="none" '+st+'/><circle cx="48" cy="44" r="7" fill="none" '+st+'/>';
+return '<svg viewBox="0 0 80 110" aria-hidden="true"><path d="M10 110 Q10 66 40 66 Q70 66 70 110Z" fill="'+sh+'" '+st+'/><circle cx="40" cy="42" r="22" fill="'+sk+'" '+st+'/>'+x+'<path d="M18 40 Q18 14 40 14 Q62 14 62 40 Q50 28 40 30 Q28 28 18 40Z" fill="'+ha+'" '+st+'/><circle cx="32" cy="44" r="3"/><circle cx="48" cy="44" r="3"/><path d="M31 54 Q40 61 49 54" fill="none" '+st+'/></svg>';
+}
+function names(a){return a.map(function(n){return[n,function(){S.title=n;return"c2end"}]})}
+var sc={
+w1:function(){return{e:"🕹️",narr:"¡Hola! Te damos la bienvenida a esta experiencia divertida y pedagógica para que aprendamos juntos cómo usar la IA de manera crítica y responsable.",go:"w2"}},
+w2:function(){return{e:"✏️",narr:"Antes de empezar queremos dirigirnos a ti de forma personal. ¿Quieres que te digamos de alguna manera?",inp:["Escribe tu nombre o seudónimo",function(v){S.name=v||"Jugador/a";return"w3"},true]}},
+w3:function(){return{narr:"Ahora sí, "+esc(S.name)+". Te voy a contar una historia y tú me ayudarás a terminarla, ¿te parece? ¡Vamos con toda!",go:"c1a"}},
+c1a:function(){return{narr:"Te presentamos a Juan Carlos. Él es un estudiante de 19 años que está en segundo semestre de economía. Es muy inteligente, le gusta la investigación y los deportes. Es una persona muy curiosa y siempre busca aprender cosas nuevas.",b:[["jc","¡Hola! Me encanta aprender cosas nuevas."]],go:"c1b"}},
+c1b:function(){return{narr:"Este semestre Juan Carlos decidió inscribir una clase que se llama “Aplicación de la inteligencia artificial para la vida”. Él conoce muy poco sobre su uso.",e:"🎓",q:"¿Tú sabes cómo usar la IA?",ch:[["Sí",function(){S.know=1;return"c1r"}],["No",function(){S.know=0;return"c1r"}]]}},
+c1r:function(){return{narr:S.know?"Excelente, seguro ayudarás a Juan Carlos a tomar las mejores decisiones.":"Qué bueno, así aprenderemos juntos a cómo usarla.",go:"c1c"}},
+c1c:function(){return{narr:"Después de la primera clase, Juan Carlos se motiva mucho a aprender de la IA.",b:[["jc","¡Quiero aprender mucho más!"]],go:"c2a"}},
+c2a:function(){return{narr:"Un día, en clase, Juan Carlos está diseñando un taller creativo sobre modalidades de ahorro. Aunque tiene una idea muy clara de lo que quiere hacer, no se le ocurre un nombre oportuno.",b:[["jc","Tengo la idea… pero ¿cómo lo llamo?"]],q:"¿Qué opciones tiene?",ch:[["Yo tengo un nombre",function(){return"c2own"}],["Le podría preguntar a los compañeros",function(){return"c2fr"}],["Le podría preguntar a una IA",function(){return"c2ia"}]]}},
+c2own:function(){return{narr:"Escribe cómo debería llamarse el taller.",e:"💡",inp:["Nombre del taller",function(v){S.title=v||"Mi taller de ahorro";return"c2end"},true]}},
+c2fr:function(){S.title="Mi Plata, Mi Plan";return{narr:"Juan Carlos conversa con un compañero de clase.",b:[["jc","¿Qué nombre le pondrías a un taller de ahorro?"],["fr","¿Y si lo llamas “Mi Plata, Mi Plan”?"],["jc","¡Me gusta! Gracias."]],go:"c2end"}},
+c2ia:function(){return{narr:"Juan Carlos abre su celular, abre una IA (un chatbot) y le pregunta lo siguiente:",e:"📱",q:"¿Qué le escribe?",ch:[["Por favor dame nombres para un taller sobre modalidades de ahorro.",function(){return"c2p1"}],["¡Hola! Necesito que me ayudes con algo. Tengo que realizar un taller sobre modalidades de ahorro, tengo una idea pero no sé qué título ponerle. ¿Podrías darme ideas?",function(){return"c2p2"}],["Dame nombres para talleres de modalidad de ahorro.",function(){return"c2p3"}]]}},
+c2p1:function(){return{narr:"La IA responde con varias opciones.",b:[["ia","Claro. Algunas ideas: elige la que más te guste."]],q:"¿Cuál elige?",ch:names(["Ahorro con Rumbo","Alcancía en Acción","Del Ahorro al Futuro","Mi Plata, Mi Plan"])}},
+c2p2:function(){S.title="Ahorro con Rumbo";return{narr:"Una conversación rápida.",b:[["jc","¡Hola! Necesito ayuda con el título de mi taller sobre modalidades de ahorro."],["ia","¡Claro! ¿Qué idea tienes y a quién va dirigido?"],["jc","Quiero que mis compañeros aprendan a ahorrar jugando."],["ia","¿Qué tal “Ahorro con Rumbo” o “Alcancía en Acción”?"],["jc","¡“Ahorro con Rumbo” es perfecto!"]],go:"c2end"}},
+c2p3:function(){return{narr:"La IA arroja estos nombres.",b:[["ia","1) Ahorro Inteligente  2) Cuentas Claras  3) Semilla de Ahorro"]],q:"¿Cuál elige?",ch:names(["Ahorro Inteligente","Cuentas Claras","Semilla de Ahorro"])}},
+c2end:function(){return{narr:"¡Genial! Ya tenemos un nombre para el taller: “"+esc(S.title)+"”. Esto ha sido de gran ayuda.",e:"🎉",go:"c3a"}},
+c3a:function(){return{narr:"¿Recuerdas el taller? Ahora Juan Carlos debe buscar información que lo sustente. Como te había contado, a él siempre le ha gustado la investigación, pero esta vez les dijeron que debían apoyarse de la IA. Él no está muy seguro de cómo buscar, pero abre su celular, abre la IA y le dice…",e:"🔎",q:"¿Cómo debería preguntar?",ch:[["Estoy haciendo un taller sobre modalidades de ahorro y necesito referentes. Dame información al respecto.",function(){S.c="A";return"c3A"}],["Hola, necesito tu ayuda. Dame referentes de personas que hablen sobre modalidades de ahorro.",function(){S.c="B";return"c3B"}],["Estoy haciendo un taller sobre modalidades de ahorro, la estoy especificando en una modalidad formal. Necesito autores o estadísticas sobre la efectividad de esta modalidad o también de críticas a la misma.",function(){S.c="C";return"c3C"}]]}},
+c3A:function(){return{narr:"La IA responde…",b:[["ia","Encontré estos documentos:"]],html:'<div class="doc">📄 Guía de ahorro de energía en el hogar</div><div class="doc">📄 10 trucos de ahorro de agua y luz</div><div class="doc">📄 Ahorro energético en la industria</div>',go:"c3end"}},
+c3B:function(){return{narr:"La IA responde…",b:[["ia","¡Hola! Con gusto. Estas son algunas posturas de personas sobre ahorrar:"]],html:'<div class="doc">💬 “Ahorra todo lo que puedas y ya.” – comentario en un foro</div><div class="doc">💬 “Ahorrar es perder, mejor invierte.” – publicación en una red social</div><div class="doc">💬 “Mi abuela guardaba en la alcancía y le fue bien.” – blog personal</div>',go:"c3end"}},
+c3C:function(){return{narr:"La IA responde con un cuadro comparativo.",b:[["ia","Aquí tienes autores, sus posturas y críticas sobre el ahorro formal:"]],html:'<table><tr><th>Autor</th><th>Postura</th><th>Crítica</th></tr><tr><td>Autor A (estudio sobre cuentas de ahorro)</td><td>Las cuentas formales fortalecen el hábito de ahorro.</td><td>Las comisiones pueden reducir el beneficio.</td></tr><tr><td>Autora B (depósitos a término)</td><td>Ofrecen rentabilidad segura.</td><td>Baja liquidez y rendimiento frente a la inflación.</td></tr><tr><td>Informe C (inclusión financiera)</td><td>Más acceso bancario aumenta la estabilidad.</td><td>No llega igual a zonas rurales.</td></tr></table><div class="note">Datos ilustrativos del juego.</div>',go:"c3end"}},
+c3end:function(){return{narr:"Juan Carlos usa la información que le dio la IA, la agrega a su taller y la entrega.",e:"📤",go:"c4a"}},
+c4a:function(){return{narr:"Día de retroalimentación del trabajo. ¿Nervios?",e:"🏫",ch:NV.map(function(o,i){return[o[0],function(){S.n=i;return"c4r"}]})}},
+c4r:function(){return{narr:NV[S.n][1],go:"c4b"}},
+c4b:function(){return{narr:"Juan Carlos llega al salón, espera su turno un poco ansioso hasta que la profesora lo llama a retroalimentación.",b:[["pr","Juan Carlos, ¿cómo te sientes con tu trabajo? ¿Estás nervioso?"],["jc",NV[S.n][0]+"."]],go:"c4c"}},
+c4c:function(){return{b:[["pr","Juan Carlos, ¿leíste los referentes?"]],ch:[["Claro profe, revisé cada uno de ellos.",function(){S.r=1;return"c4"+S.c}],["Profe, la verdad se los pedí a la IA pero no los revisé.",function(){S.r=0;return"c4"+S.c}]]}},
+c4A:function(){return{b:[["pr","Leí tus referentes, efectivamente hablan de ahorro, pero ahorro de energía, no de lo que tú estás investigando. Por favor revisa tu bibliografía."]],go:"fin"}},
+c4B:function(){return{b:[["pr","Efectivamente hablas del ahorro y sus diferentes modalidades, pero ¿acaso hiciste entrevistas?"]],ch:[["No profe, solo usé la IA.",function(){return"c4B2"}],["¿Debía?",function(){return"c4B2"}]]}},
+c4B2:function(){return{b:[["pr","Tienes muchos comentarios y opiniones de muchas personas en el documento, que efectivamente lo nutren, pero son cosas subidas en internet sin ningún tipo de proceso científico o confirmable. A la próxima, si te interesa la opinión de la gente, usa los instrumentos debidos."]],go:"fin"}},
+c4C:function(){return{b:[["pr","Lo estaba leyendo y me di cuenta de que tienes información muy sólida; hay autores de los que hablas que yo no conocía. "+(S.r?"Me alegra que hayas leído los referentes: la IA nos arroja mucha información, pero es importante pasarla por nuestra crítica y lente antes de aceptarla.":"Es buena información, pero siempre tienes que leer los referentes.")]],go:"fin"}},
+fin:function(){return{e:"👋",b:[["jc","Bueno, hoy aprendimos mucho sobre cómo usar la IA, ¿no? Hasta la próxima."]],narr:"Fin. Gracias por decidir, "+esc(S.name)+".",ch:[["Jugar de nuevo",function(){S={};return"w1"}]]}}
+};
+function chapter(id){return id[0]=="w"?"Introducción":id.slice(0,2)=="c1"?"Capítulo 1 · Presentación":id.slice(0,2)=="c2"?"Capítulo 2 · Creatividad":id.slice(0,2)=="c3"?"Capítulo 3 · Referentes":"Capítulo 4 · Revisión"}
+function show(id){
+var d=sc[id](),h="";
+$("#chap").textContent=chapter(id);
+h+='<div class="panel">'+(d.narr?'<div class="narr">'+d.narr+'</div>':"")+'<div class="scene">';
+if(d.e)h+='<div class="big" aria-hidden="true">'+d.e+'</div>';
+(d.b||[]).forEach(function(r){h+='<div class="row '+(r[0]=="jc"?"l":"r")+'">'+fig(r[0])+'<div class="bub '+r[0]+'"><b>'+NM[r[0]]+'</b>'+r[1]+'</div></div>'});
+if(d.html)h+=d.html;
+h+='</div></div><div class="ctl">';
+if(d.q)h+='<p class="q">'+d.q+'</p>';
+if(d.ch)d.ch.forEach(function(c,i){h+='<button data-i="'+i+'">'+c[0]+'</button>'});
+if(d.go)h+='<button class="go" data-go="1">Continuar</button>';
+if(d.inp)h+='<input id="inp" maxlength="40" placeholder="'+d.inp[0]+'" aria-label="'+d.inp[0]+'"><div class="err" id="err" role="alert">Elige otro nombre, por favor.</div><button class="go" data-inp="1">Listo</button>';
+h+='</div>';
+$("#stage").innerHTML=h;
+var s=$("#stage");
+s.querySelectorAll("[data-i]").forEach(function(b){b.onclick=function(){show(d.ch[b.dataset.i][1]())}});
+var g=s.querySelector("[data-go]");if(g)g.onclick=function(){show(d.go)};
+var o=s.querySelector("[data-inp]");
+if(o){var f=function(){var v=$("#inp").value.trim();if(bad(v)){$("#err").style.display="block";return}show(d.inp[1](v))};o.onclick=f;$("#inp").onkeydown=function(e){if(e.key=="Enter")f()};$("#inp").focus()}
+window.scrollTo(0,0);
+}
+show("w1");
+</script>
+</body>
+</html>
